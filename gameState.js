@@ -1,27 +1,24 @@
 export function checkCollision(player, obstacles, isCrashed) {
     if (isCrashed) return false;
     let collided = false;
+    const isOnGround = player.jumpHeight === 0 && !player.jumping;
     obstacles.forEach(ob => {
-        const isRock = !ob.isTree;
         let playerBox = player.getBoundingClientRect();
         let obBox;
-        if (isRock) {
+        if (!ob.isTree) {
             // For rocks, use the <rect> inside the group for collision
             const rect = ob.querySelector('rect');
             obBox = rect ? rect.getBoundingClientRect() : ob.getBoundingClientRect();
         } else {
             obBox = ob.getBoundingClientRect();
         }
-        const playerY = parseFloat(player.getAttribute('y'));
-        const playerBottom = playerY + 15 * player.scale;
-        const obstacleTop = ob.y - (isRock ? 15 : 60);
-        const jumpBuffer = 20;
-        // Fix: For rocks, if player is jumping, always skip collision
-        const inJump = player.jumping && isRock;
-        const collision = playerBox.left < obBox.right && playerBox.right > obBox.left &&
-                         playerBox.top < obBox.bottom && playerBox.bottom > obBox.top;
-        if (!inJump && collision) {
-            collided = true;
+        // Only check collision if player is on the ground
+        if (isOnGround) {
+            const collision = playerBox.left < obBox.right && playerBox.right > obBox.left &&
+                             playerBox.top < obBox.bottom && playerBox.bottom > obBox.top;
+            if (collision) {
+                collided = true;
+            }
         }
     });
     return collided;
