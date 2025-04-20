@@ -251,6 +251,92 @@ function toggleWideMode() {
     }
 }
 
+// Touch controls for mobile: tap left/right to steer
+const gameContainer = document.getElementById('gameContainer');
+let touchLeftActive = false;
+let touchRightActive = false;
+
+function handleTouch(e) {
+    if (!gameActive && isCrashed) {
+        // Only allow restart if tap is in the middle 33%
+        const rect = gameContainer.getBoundingClientRect();
+        let x;
+        if (e.touches && e.touches.length > 0) {
+            x = e.touches[0].clientX;
+        } else if (e.changedTouches && e.changedTouches.length > 0) {
+            x = e.changedTouches[0].clientX;
+        } else if (e.clientX !== undefined) {
+            x = e.clientX;
+        } else {
+            return;
+        }
+        const leftZone = rect.left + rect.width / 3;
+        const rightZone = rect.left + 2 * rect.width / 3;
+        if (x >= leftZone && x <= rightZone && allowReset) {
+            doReset();
+            resetGame(svg, player, obstacles, [], [], [], { current: null }, { current: 0 }, gameOverScreen, playerFragments);
+            hideGameOverScreen(gameOverScreen);
+            gameActive = true;
+            isCrashed = false;
+            distance = 0;
+            speed = 2;
+            allowReset = false;
+            updateCursor();
+        }
+        return;
+    }
+    // ...existing code for in-game touch...
+    const rect = gameContainer.getBoundingClientRect();
+    let x;
+    if (e.touches && e.touches.length > 0) {
+        x = e.touches[0].clientX;
+    } else if (e.changedTouches && e.changedTouches.length > 0) {
+        x = e.changedTouches[0].clientX;
+    } else if (e.clientX !== undefined) {
+        x = e.clientX;
+    } else {
+        return;
+    }
+    const leftZone = rect.left + rect.width / 3;
+    const rightZone = rect.left + 2 * rect.width / 3;
+    if (x < leftZone) {
+        // Left 33%: steer left
+        keys['ArrowLeft'] = true;
+        keys['ArrowRight'] = false;
+        keys['Space'] = false;
+        touchLeftActive = true;
+        touchRightActive = false;
+    } else if (x > rightZone) {
+        // Right 33%: steer right
+        keys['ArrowRight'] = true;
+        keys['ArrowLeft'] = false;
+        keys['Space'] = false;
+        touchRightActive = true;
+        touchLeftActive = false;
+    } else {
+        // Middle 33%: jump
+        keys['Space'] = true;
+        keys['ArrowLeft'] = false;
+        keys['ArrowRight'] = false;
+        touchLeftActive = false;
+        touchRightActive = false;
+    }
+}
+function clearTouch() {
+    keys['ArrowLeft'] = false;
+    keys['ArrowRight'] = false;
+    keys['Space'] = false;
+    touchLeftActive = false;
+    touchRightActive = false;
+}
+gameContainer.addEventListener('touchstart', handleTouch);
+gameContainer.addEventListener('touchmove', handleTouch);
+gameContainer.addEventListener('touchend', clearTouch);
+gameContainer.addEventListener('touchcancel', clearTouch);
+// Optional: also support mouse for desktop testing
+// gameContainer.addEventListener('mousedown', handleTouch);
+// gameContainer.addEventListener('mouseup', clearTouch);
+
 // Main game loop
 function update() {
     if (!gameActive && !isCrashed) return;
