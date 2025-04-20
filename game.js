@@ -337,6 +337,17 @@ gameContainer.addEventListener('touchcancel', clearTouch);
 // gameContainer.addEventListener('mousedown', handleTouch);
 // gameContainer.addEventListener('mouseup', clearTouch);
 
+// Prevent default touch actions
+gameContainer.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+}, { passive: false });
+gameContainer.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+}, { passive: false });
+gameContainer.addEventListener('touchend', function(e) {
+    e.preventDefault();
+}, { passive: false });
+
 // Main game loop
 function update() {
     if (!gameActive && !isCrashed) return;
